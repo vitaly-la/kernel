@@ -1,6 +1,9 @@
-OBJ=boot.o kernel.o
+OBJ=boot.o kernel.o solve.o
 
-myos.iso: myos.bin grub.cfg
+run: kernel.iso
+	qemu-system-i386 -cdrom $<
+
+kernel.iso: kernel.bin grub.cfg
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot
 	cp grub.cfg isodir/boot/grub
@@ -9,11 +12,11 @@ myos.iso: myos.bin grub.cfg
 boot.o: boot.s
 	i686-elf-as $< -o $@
 
-kernel.o: kernel.c
+%.o: %.c
 	i686-elf-gcc -c $< -o $@ -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
-myos.bin: linker.ld $(OBJ)
+kernel.bin: linker.ld $(OBJ)
 	i686-elf-gcc -T $< -o $@ -ffreestanding -O2 -nostdlib $(OBJ) -lgcc
 
 clean:
-	rm -rf $(OBJ) myos.bin myos.iso isodir
+	rm -rf $(OBJ) kernel.bin kernel.iso isodir
